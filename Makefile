@@ -19,3 +19,14 @@ test:
 # Release builds do not use the dynamic linker, so the build is slow.
 release: test
 	cargo build --release
+
+lint:
+	cargo fmt
+	cargo clippy --fix --allow-dirty
+
+pedantic:
+	cargo fmt
+	cargo clippy --fix --allow-dirty -- -W clippy::pedantic
+
+upgrade:
+	cargo update --aggressive
