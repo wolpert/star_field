@@ -16,6 +16,8 @@ run:
 test:
 	cargo test --features bevy/dynamic_linking
 
+dev: test lint run
+
 # Release builds do not use the dynamic linker, so the build is slow.
 release: test
 	cargo build --release
