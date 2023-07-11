@@ -14,5 +14,13 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
+    - name: rustup
+      shell: bash 
+      run: rustup update
+
+    - name: update_ubuntu
+      shell: bash 
+      run: sudo apt-get update && sudo apt-get install libasound2-dev
+
     - name: workflow
       run: make workflow
