@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use crate::state::GameState;
 use crate::util::despawn_screen;
 
-// This plugin will display a splash screen with Bevy logo for 1 second before switching to the menu
+/// This plugin will display a splash screen with Bevy logo for 1 second before switching to the menu
 pub struct SplashPlugin;
 
 impl Plugin for SplashPlugin {

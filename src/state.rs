@@ -1,4 +1,4 @@
-use bevy::prelude::{Component, Resource, States};
+use bevy::prelude::{Color, Component, Resource, States};
 
 // Enum that will be used as a global state for the game
 #[derive(Clone, Copy, Default, Eq, PartialEq, Debug, Hash, States)]
@@ -26,3 +26,5 @@ impl Volume {
         Self(volume)
     }
 }
+
+pub const TEXT_COLOR: Color = Color::rgb(0.9, 0.9, 0.9);
