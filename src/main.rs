@@ -2,10 +2,13 @@
 //! change some settings or quit. There is no actual game, it will just display the current
 //! settings for 5 seconds before going back to the menu.
 
+use crate::splash::SplashPlugin;
 use bevy::prelude::*;
 use state::{DisplayQuality, GameState, Volume};
 
+mod splash;
 mod state;
+mod util;
 
 const TEXT_COLOR: Color = Color::rgb(0.9, 0.9, 0.9);
 
@@ -19,7 +22,7 @@ fn main() {
         .add_state::<GameState>()
         .add_systems(Startup, setup)
         // Adds the plugins for each state
-        .add_plugins((splash::SplashPlugin, menu::MenuPlugin, game::GamePlugin))
+        .add_plugins((SplashPlugin, menu::MenuPlugin, game::GamePlugin))
         .run();
 }
 
@@ -27,84 +30,12 @@ fn setup(mut commands: Commands) {
     commands.spawn(Camera2dBundle::default());
 }
 
-mod splash {
-    use bevy::prelude::*;
-    use crate::state::GameState;
-
-    use super::despawn_screen;
-
-    // This plugin will display a splash screen with Bevy logo for 1 second before switching to the menu
-    pub struct SplashPlugin;
-
-    impl Plugin for SplashPlugin {
-        fn build(&self, app: &mut App) {
-            // As this plugin is managing the splash screen, it will focus on the state `GameState::Splash`
-            app
-                // When entering the state, spawn everything needed for this screen
-                .add_systems(OnEnter(GameState::Splash), splash_setup)
-                // While in this state, run the `countdown` system
-                .add_systems(Update, countdown.run_if(in_state(GameState::Splash)))
-                // When exiting the state, despawn everything that was spawned for this screen
-                .add_systems(OnExit(GameState::Splash), despawn_screen::<OnSplashScreen>);
-        }
-    }
-
-    // Tag component used to tag entities added on the splash screen
-    #[derive(Component)]
-    struct OnSplashScreen;
-
-    // Newtype to use a `Timer` for this screen as a resource
-    #[derive(Resource, Deref, DerefMut)]
-    struct SplashTimer(Timer);
-
-    fn splash_setup(mut commands: Commands, asset_server: Res<AssetServer>) {
-        let icon = asset_server.load("branding/icon.png");
-        // Display the logo
-        commands
-            .spawn((
-                NodeBundle {
-                    style: Style {
-                        align_items: AlignItems::Center,
-                        justify_content: JustifyContent::Center,
-                        width: Val::Percent(100.0),
-                        ..default()
-                    },
-                    ..default()
-                },
-                OnSplashScreen,
-            ))
-            .with_children(|parent| {
-                parent.spawn(ImageBundle {
-                    style: Style {
-                        // This will set the logo to be 200px wide, and auto adjust its height
-                        width: Val::Px(200.0),
-                        ..default()
-                    },
-                    image: UiImage::new(icon),
-                    ..default()
-                });
-            });
-        // Insert the timer as a resource
-        commands.insert_resource(SplashTimer(Timer::from_seconds(1.0, TimerMode::Once)));
-    }
-
-    // Tick the timer, and change state when finished
-    fn countdown(
-        mut game_state: ResMut<NextState<GameState>>,
-        time: Res<Time>,
-        mut timer: ResMut<SplashTimer>,
-    ) {
-        if timer.tick(time.delta()).finished() {
-            game_state.set(GameState::Menu);
-        }
-    }
-}
-
 mod game {
-    use bevy::prelude::*;
     use crate::state::{DisplayQuality, GameState, Volume};
+    use crate::util::despawn_screen;
+    use bevy::prelude::*;
 
-    use super::{despawn_screen, TEXT_COLOR};
+    use super::TEXT_COLOR;
 
     // This plugin will contain the game. In this case, it's just be a screen that will
     // display the current settings for 5 seconds before returning to the menu
@@ -228,10 +159,11 @@ mod game {
 }
 
 mod menu {
-    use bevy::{app::AppExit, prelude::*};
     use crate::state::{DisplayQuality, GameState, Volume};
+    use crate::util::despawn_screen;
+    use bevy::{app::AppExit, prelude::*};
 
-    use super::{despawn_screen, TEXT_COLOR};
+    use super::TEXT_COLOR;
 
     // This plugin manages the menu, with 5 different screens:
     // - a main menu with "New Game", "Settings", "Quit"
@@ -795,12 +727,5 @@ mod menu {
                 }
             }
         }
-    }
-}
-
-// Generic system that takes a component as a parameter, and will despawn all entities with that component
-fn despawn_screen<T: Component>(to_despawn: Query<Entity, With<T>>, mut commands: Commands) {
-    for entity in &to_despawn {
-        commands.entity(entity).despawn_recursive();
     }
 }
