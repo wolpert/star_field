@@ -3,22 +3,18 @@
 //! settings for 5 seconds before going back to the menu.
 
 use bevy::prelude::*;
-use state::{DisplayQuality, GameState};
+use state::{DisplayQuality, GameState, Volume};
 
 mod state;
 
 const TEXT_COLOR: Color = Color::rgb(0.9, 0.9, 0.9);
-
-// One of the two settings that can be set through the menu. It will be a resource in the app
-#[derive(Resource, Debug, Component, PartialEq, Eq, Clone, Copy)]
-struct Volume(u32);
 
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
         // Insert as resource the initial value for the settings resources
         .insert_resource(DisplayQuality::Medium)
-        .insert_resource(Volume(7))
+        .insert_resource(Volume::new(7))
         // Declare the game state, whose starting value is determined by the `Default` trait
         .add_state::<GameState>()
         .add_systems(Startup, setup)
@@ -106,9 +102,9 @@ mod splash {
 
 mod game {
     use bevy::prelude::*;
-    use crate::state::{DisplayQuality, GameState};
+    use crate::state::{DisplayQuality, GameState, Volume};
 
-    use super::{despawn_screen, TEXT_COLOR, Volume};
+    use super::{despawn_screen, TEXT_COLOR};
 
     // This plugin will contain the game. In this case, it's just be a screen that will
     // display the current settings for 5 seconds before returning to the menu
@@ -233,9 +229,9 @@ mod game {
 
 mod menu {
     use bevy::{app::AppExit, prelude::*};
-    use crate::state::{DisplayQuality, GameState};
+    use crate::state::{DisplayQuality, GameState, Volume};
 
-    use super::{despawn_screen, TEXT_COLOR, Volume};
+    use super::{despawn_screen, TEXT_COLOR};
 
     // This plugin manages the menu, with 5 different screens:
     // - a main menu with "New Game", "Settings", "Quit"
@@ -746,8 +742,8 @@ mod menu {
                                         background_color: NORMAL_BUTTON.into(),
                                         ..default()
                                     });
-                                    entity.insert(Volume(volume_setting));
-                                    if *volume == Volume(volume_setting) {
+                                    entity.insert(Volume::new(volume_setting));
+                                    if *volume == Volume::new(volume_setting) {
                                         entity.insert(SelectedOption);
                                     }
                                 }
