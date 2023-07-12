@@ -10,27 +10,31 @@
 
 # Run is the default execution for dev work, with dynamic linking
 # so it builds faster.
-run:
+run: build
 	cargo run --features bevy/dynamic_linking
 
-test:
+build:
+	cargo build --features bevy/dynamic_linking
+
+test: build
 	cargo test --features bevy/dynamic_linking
 
 dev: test lint run
-
-workflow: test lint
 
 # Release builds do not use the dynamic linker, so the build is slow.
 release: test
 	cargo build --release
 
-lint:
+lint: build
 	cargo fmt
-	cargo clippy --fix --allow-dirty
+	cargo clippy --fix --allow-dirty --allow-staged
 
-pedantic:
+pedantic: build
 	cargo fmt
-	cargo clippy --fix --allow-dirty -- -W clippy::pedantic
+	cargo clippy --fix --allow-dirty --allow-staged -- -W clippy::pedantic
 
 upgrade:
 	cargo update --aggressive
+
+act:
+	gh act
